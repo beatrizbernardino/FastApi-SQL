@@ -4,7 +4,8 @@ info_disciplinas = [
         "professor_name": "Macul",
         "description": [
             {
-                "description": "experiencia indescritível"
+                "description": "experiencia indescritível",
+                "NotaId": "123oi456"
             },
         ]
     },
@@ -13,32 +14,30 @@ info_disciplinas = [
         "professor_name": "Luiz Filho",
         "description": [
             {
-                "description": "melhor matéria"
+                "description": "melhor matéria",
+                "NotaId": "678oi910"
             },
         ]
     },
     {
         "name": "GDE",
-        "professor_name": "Fernando",
-        "description": [
-            {
-                "description": "favorita da bia"
-            },
-        ]
-
+        "professor_name": "Fernando"
     },
     {
         "name": "MecSunshine",
         "professor_name": "Caioba & Vitao",
         "description": [
             {
-                "description": "melhor matéria"
+                "description": "melhor matéria",
+                "NotaId": "urubu456"
             },
             {
-                "description": "dupla do ano!!!!!"
+                "description": "dupla do ano!!!!!",
+                "NotaId": "123129073120973"
             },
             {
-                "description": "sou fã"
+                "description": "sou fã",
+                "NotaId": "7865420"
             }
         ]
     },
