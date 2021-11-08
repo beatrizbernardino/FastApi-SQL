@@ -1,29 +1,63 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, status, HTTPException, Body
 from typing import Optional,  List, NewType
-from pydantic import BaseModel
-from info_disciplinas import info_disciplinas
+from pydantic import BaseModel, Field
 from fastapi.encoders import jsonable_encoder
 from uuid import UUID
-app = FastAPI()
 
-disciplines = ["EmpTech"]
+info_disciplinas = []
+
+tags_metadata = [
+    {
+        "name": "Disciplinas",
+        "description": "Rotas envolvendo aterações nas disciplinas",
+    },
+    {
+        "name": "Notas",
+        "description": "Rotas envolvendo aterações nas disciplinas",
+    },
+]
+
+app = FastAPI(openapi_tags=tags_metadata)
+
+# Lista que terá os nomes das disciplinas
+disciplines = []
 
 
+# classe de uma nota de uma disciplina
 class Notas(BaseModel):
-    description: str
-    NotaId: UUID
+    description: str = Field(...,
+                             title="Anotação feita para a matéria", 
+                             description=f'{"String field"}', 
+                             example="Conteúdos para revisar: bla, bla ")
+                             
+    NotaId: UUID = Field(...,
+                         title="Id único para cada anotação", 
+                         description=f'{"Must be a unique id"}', 
+                         example="3fa85f64-5717-4562-b3fc-2c963f66afa6")
 
-
+# classe de uma disciplina
 class Disciplina(BaseModel):
-    name: str
-    professor_name: Optional[str] = None
+    name: str = Field(...,
+                    title="Nome da matéria",
+                    description=f'{"Must be a unique name"}', example="GDE")
+
+    professor_name: Optional[str] = Field(None,
+                                        title="Professor da matéria",
+                                        description=f'{"Optional"}',
+                                        example="Fabio Ayres")
+
     description: Optional[List[Notas]] = None
 
-
+# classe utilizado para modificar uma disciplina
 class UpdateDisciplina(BaseModel):
-    name: Optional[str] = None
-    professor_name: Optional[str] = None
- 
+    name: str = Field(...,
+                    title="Nome da matéria",
+                    description=f'{"Optional"}', example="GDE")
+                    
+    professor_name: Optional[str] = Field(None,
+                                        title="Professor da matéria",
+                                        description=f'{"Optional"}',
+                                        example="Antonio Deusany")
 
 # função que pega todas as informações de todas as diciplinas
 @app.get("/")
@@ -32,113 +66,119 @@ def read_root():
 
 
 # função para pegar os nomes de todas as disciplinas
-@app.get("/disciplinesNames")
+@app.get("/disciplines/names", tags=["Disciplinas"])
 def get_disciplines():
-    lista_nomes = []
-    for disciplinas in info_disciplinas:
-        lista_nomes.append(disciplinas["name"])
-    return lista_nomes
+    return disciplines
 
 
 # função para listar as notas de uma disciplina
-@app.get("/disciplines/notes/{discipline_name}")
+@app.get("/disciplines/notes/{discipline_name}", status_code=status.HTTP_200_OK, tags=["Notas"])
 def get_disciplines_notes(discipline_name: str):
 
     for disciplinas in info_disciplinas:
         if disciplinas["name"] == discipline_name:
-            return disciplinas["description"]
+            try:
+                return disciplinas["description"]
+            except:
+                raise HTTPException(
+                    status_code=404, detail="List of notes not found")
 
-    return {"erro": "Nenhuma descrição adicionada ainda :("}
+    raise HTTPException(status_code=404, detail="List of notes not found")
+
 
 # função para criar disciplinas
-@app.post("/discipline")
+@app.post("/discipline", status_code=status.HTTP_201_CREATED, response_model=Disciplina, tags=["Disciplinas"])
 def create_discipline(discipline: Disciplina):
 
     disciplina_dict = discipline.dict()
     if discipline.name in disciplines:
-        return {"erro": "Esse nome já existe :("}
+        raise HTTPException(status_code=409, detail="Name already exists")
+
     else:
         info_disciplinas.append(disciplina_dict)
         disciplines.append(discipline.name)
-        return info_disciplinas
+        return discipline
 
 
 # função para criar uma nota para uma disciplina
-@app.post("/disciplines/notes/{discipline_name}")
+@app.post("/disciplines/notes/{discipline_name}", status_code=status.HTTP_201_CREATED, response_model=Notas, tags=["Notas"])
 def post_disciplines_notes(discipline_name: str, nota: Notas):
 
     for disciplinas in info_disciplinas:
         if disciplinas["name"] == discipline_name:
             if "description" in disciplinas:
-                print(type(disciplinas["description"]))
                 disciplinas["description"].append(nota)
             else:
                 disciplinas["description"] = [nota]
 
-            return disciplinas
+            return nota
 
-    return {"erro": "Não existe a disciplina escolhida"}
+    raise HTTPException(status_code=404, detail="Subject not found")
+
 
 # função para deletar uma disciplina
-@app.delete("/disciplines/{discipline_name}")
+@app.delete("/disciplines/{discipline_name}", status_code=status.HTTP_200_OK, tags=["Disciplinas"])
 def delete_discipline(discipline_name: str):
     for disciplinas in info_disciplinas:
         if disciplinas["name"] == discipline_name:
             disciplines.remove(discipline_name)
             info_disciplinas.remove(disciplinas)
+            return info_disciplinas
 
-            return {"sucesso": "A disciplina foi deletada com sucesso"}
+    raise HTTPException(status_code=404, detail="Subject not found")
 
-    return info_disciplinas
 
 # função de deletar notas
-@app.delete("/disciplines/notes/{discipline_name}")
+@app.delete("/disciplines/notes/{discipline_name}", status_code=status.HTTP_200_OK, tags=["Notas"])
 def delete_note(discipline_name: str, nota: Notas):
     for disciplinas in info_disciplinas:
         if disciplinas["name"] == discipline_name:
-            disciplinas["description"].remove(nota)
+            try:
+                disciplinas["description"].remove(nota)
+            except:
+                raise HTTPException(status_code=400, detail="Wrong info")
+            return disciplinas
 
-            return {"sucesso": "A nota foi deletada com sucesso"}
-
-    return info_disciplinas
+    raise HTTPException(status_code=404, detail="Subject not found")
 
 
 # função de modificar notas
-@app.put("/disciplines/notes/{discipline_name}")
+@app.put("/disciplines/notes/{discipline_name}", status_code=status.HTTP_200_OK, response_model=Notas, tags=["Notas"])
 def update_note(discipline_name: str, nota: Notas):
 
     for disciplinas in info_disciplinas:
         if disciplinas["name"] == discipline_name:
             for descricao in disciplinas["description"]:
-                if str(descricao.NotaId) == str(nota.NotaId):
-                    descricao.description = nota.description
+                if str(descricao["NotaId"]) == str(nota.NotaId):
+                    descricao["description"] = nota.description
+                    return nota
 
-                    return {"sucesso": "A nota foi modificada com sucesso"}
-
-    return info_disciplinas
+    raise HTTPException(status_code=404, detail="Subject/Note not found")
 
 
 # função de modificar as disciplinas
-@app.patch("/disciplines/discipline/{discipline_name}")
+@app.patch("/disciplines/discipline/{discipline_name}", status_code=status.HTTP_200_OK, response_model=Disciplina, tags=["Disciplinas"])
 def update_discipline(discipline_name: str, discipline: UpdateDisciplina):
-    
+
     for disciplinas in info_disciplinas:
         if disciplinas["name"] == discipline_name:
+
             if discipline.name in disciplines:
-                return {"erro":"esse nome já existe :("}
+                raise HTTPException(
+                    status_code=409, detail="Name already exists")
             else:
                 if discipline.name is not None:
+
                     disciplines.remove(disciplinas["name"])
                     disciplines.append(discipline.name)
-              
-            
+
                 stored_item_data = disciplinas
                 stored_item_model = Disciplina(**stored_item_data)
                 update_data = discipline.dict(exclude_unset=True)
                 updated_item = stored_item_model.copy(update=update_data)
-                index=info_disciplinas.index(disciplinas)
+                index = info_disciplinas.index(disciplinas)
                 info_disciplinas[index] = jsonable_encoder(updated_item)
-                
+
                 return info_disciplinas[index]
 
-    return {"erro": "não foi possível alterar"}
+    raise HTTPException(status_code=404, detail="Subject/Note not found")
