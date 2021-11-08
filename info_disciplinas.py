@@ -5,7 +5,7 @@ info_disciplinas = [
         "description": [
             {
                 "description": "experiencia indescritível",
-                "NotaId": "123oi456"
+                "NotaId": "3fa85f64-7817-4562-b3fc-2c963f66afa6"
             },
         ]
     },
@@ -15,7 +15,7 @@ info_disciplinas = [
         "description": [
             {
                 "description": "melhor matéria",
-                "NotaId": "678oi910"
+                "NotaId": "3fa85f64-5717-4892-b3fc-2c963f66afa6"
             },
         ]
     },
@@ -29,15 +29,15 @@ info_disciplinas = [
         "description": [
             {
                 "description": "melhor matéria",
-                "NotaId": "urubu456"
+                "NotaId": "3f875f64-5717-4562-b3fc-2c963f66afa6"
             },
             {
                 "description": "dupla do ano!!!!!",
-                "NotaId": "123129073120973"
+                "NotaId": "3fa85f64-5717-4562-u3fc-2c963f66afa6"
             },
             {
                 "description": "sou fã",
-                "NotaId": "7865420"
+                "NotaId": "3fa85f64-ab17-4562-b3fc-2c963f66afa6"
             }
         ]
     },
