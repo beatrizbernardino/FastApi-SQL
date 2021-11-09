@@ -137,6 +137,9 @@ def delete_discipline(discipline_name: str):
     for disciplinas in info_disciplinas:
         if disciplinas["name"] == discipline_name:
             disciplines.remove(discipline_name)
+            for descricao in disciplinas["description"]:
+                print(descricao["NotaId"])
+                id.remove(descricao["NotaId"])
             info_disciplinas.remove(disciplinas)
             return info_disciplinas
 
@@ -150,6 +153,7 @@ def delete_note(discipline_name: str, nota: Notas):
         if disciplinas["name"] == discipline_name:
             try:
                 disciplinas["description"].remove(nota)
+                id.remove(nota.NotaId)
             except:
                 raise HTTPException(status_code=400, detail="Wrong info")
             return disciplinas
