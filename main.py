@@ -22,44 +22,52 @@ app = FastAPI(openapi_tags=tags_metadata)
 # Lista que terá os nomes das disciplinas
 disciplines = []
 
+id = []
+
 
 # classe de uma nota de uma disciplina
 class Notas(BaseModel):
     description: str = Field(...,
-                             title="Anotação feita para a matéria", 
-                             description=f'{"String field"}', 
+                             title="Anotação feita para a matéria",
+                             description=f'{"String field"}',
                              example="Conteúdos para revisar: bla, bla ")
-                             
+
     NotaId: UUID = Field(...,
-                         title="Id único para cada anotação", 
-                         description=f'{"Must be a unique id"}', 
+                         title="Id único para cada anotação",
+                         description=f'{"Must be a unique id"}',
                          example="3fa85f64-5717-4562-b3fc-2c963f66afa6")
 
 # classe de uma disciplina
+
+
 class Disciplina(BaseModel):
     name: str = Field(...,
-                    title="Nome da matéria",
-                    description=f'{"Must be a unique name"}', example="GDE")
+                      title="Nome da matéria",
+                      description=f'{"Must be a unique name"}', example="GDE")
 
     professor_name: Optional[str] = Field(None,
-                                        title="Professor da matéria",
-                                        description=f'{"Optional"}',
-                                        example="Fabio Ayres")
+                                          title="Professor da matéria",
+                                          description=f'{"Optional"}',
+                                          example="Fabio Ayres")
 
     description: Optional[List[Notas]] = None
 
 # classe utilizado para modificar uma disciplina
+
+
 class UpdateDisciplina(BaseModel):
     name: str = Field(...,
-                    title="Nome da matéria",
-                    description=f'{"Optional"}', example="GDE")
-                    
+                      title="Nome da matéria",
+                      description=f'{"Optional"}', example="GDE")
+
     professor_name: Optional[str] = Field(None,
-                                        title="Professor da matéria",
-                                        description=f'{"Optional"}',
-                                        example="Antonio Deusany")
+                                          title="Professor da matéria",
+                                          description=f'{"Optional"}',
+                                          example="Antonio Deusany")
 
 # função que pega todas as informações de todas as diciplinas
+
+
 @app.get("/")
 def read_root():
     return info_disciplinas
@@ -91,12 +99,14 @@ def get_disciplines_notes(discipline_name: str):
 def create_discipline(discipline: Disciplina):
 
     disciplina_dict = discipline.dict()
-    if discipline.name in disciplines:
-        raise HTTPException(status_code=409, detail="Name already exists")
+    if discipline.name in disciplines or discipline.description[0].NotaId in id:
+        raise HTTPException(
+            status_code=409, detail="Name or ID already exists")
 
     else:
         info_disciplinas.append(disciplina_dict)
         disciplines.append(discipline.name)
+        id.append(discipline.description[0].NotaId)
         return discipline
 
 
@@ -106,10 +116,15 @@ def post_disciplines_notes(discipline_name: str, nota: Notas):
 
     for disciplinas in info_disciplinas:
         if disciplinas["name"] == discipline_name:
+            if nota.NotaId in id:
+                raise HTTPException(
+                    status_code=409, detail="Id must be unique")
+
             if "description" in disciplinas:
                 disciplinas["description"].append(nota)
             else:
                 disciplinas["description"] = [nota]
+            id.append(nota.NotaId)
 
             return nota
 
