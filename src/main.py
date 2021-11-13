@@ -7,7 +7,6 @@ from models import models
 from schemas import schemas
 from database.database import SessionLocal, engine
 
-info_disciplinas = []
 
 tags_metadata = [
     {
@@ -49,7 +48,6 @@ def get_disciplines_notes(discipline_name: str, db: Session = Depends(get_db)):
 
 
 # função para criar disciplinas
-# bug pro response model + como adcionar anotacao
 @app.post("/discipline", status_code=status.HTTP_201_CREATED,  tags=["Disciplinas"])
 def create_discipline(discipline: schemas.CreateDisciplina,  db: Session = Depends(get_db)):
 
@@ -60,7 +58,17 @@ def create_discipline(discipline: schemas.CreateDisciplina,  db: Session = Depen
     return crud.create_disciplina(db=db, disciplina=discipline)
 
 
+# função para criar uma nota para uma disciplina
 @app.post("/disciplines/notes/{discipline_name}", status_code=status.HTTP_201_CREATED, response_model=schemas.Notas, tags=["Notas"])
 def post_disciplines_notes(discipline_name: str, nota: schemas.NotasBase, db: Session = Depends(get_db)):
 
     return crud.create_nota(db=db, nota=nota, discipline_name=discipline_name)
+
+
+# função para deletar uma disciplina
+@app.delete("/disciplines/{discipline_name}", status_code=status.HTTP_200_OK, tags=["Disciplinas"])
+def delete_discipline(discipline_name: str,  db: Session = Depends(get_db)):
+    return crud.delete_disciplina(db=db, discipline_name=discipline_name)
+
+
+# arrumar: respostas quando não tem nenhum dado (tem que dar erro pro get notas com materia que nao existe), HTTPexception, response_models

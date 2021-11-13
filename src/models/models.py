@@ -9,8 +9,10 @@ class Notas(Base):
 
     id = Column(Integer, primary_key=True, unique=True, index=True)
     description = Column(String(300))
-    disciplina_id = Column(String(45), ForeignKey("disciplinas.name"))
-    disciplina = relationship("Disciplina", back_populates="description")
+    disciplina_id = Column(String(45), ForeignKey(
+        "disciplinas.name",  ondelete="CASCADE"))
+    disciplina = relationship(
+        "Disciplina",  back_populates="description", passive_deletes=True)
 
 
 class Disciplina(Base):
@@ -19,7 +21,7 @@ class Disciplina(Base):
     name = Column(String(45), primary_key=True, unique=True, index=True)
     professor_name = Column(String(45), nullable=True)
     description = relationship(
-        "Notas", back_populates="disciplina", primaryjoin='Disciplina.name==Notas.disciplina_id')
+        "Notas", back_populates="disciplina", passive_deletes=True,  primaryjoin='Disciplina.name==Notas.disciplina_id')
 
 
 # classe utilizado para modificar uma disciplina

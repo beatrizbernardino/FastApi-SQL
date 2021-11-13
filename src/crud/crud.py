@@ -44,3 +44,11 @@ def create_nota(nota: schemas.NotasBase, discipline_name: str, db: Session):
     db.refresh(db_nota)
 
     return db_nota
+
+
+def delete_disciplina(db: Session, discipline_name: str):
+
+    db.query(models.Disciplina).filter(
+        models.Disciplina.name == discipline_name).delete()
+    db.commit()
+    return discipline_name
