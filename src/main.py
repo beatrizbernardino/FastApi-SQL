@@ -37,6 +37,7 @@ def get_db():
 @app.get("/disciplines/names", tags=["Disciplinas"])
 def get_disciplines(db: Session = Depends(get_db)):
     nome_disciplinas = crud.read_nome_disciplinas(db)
+
     return nome_disciplinas
 
 
@@ -44,11 +45,15 @@ def get_disciplines(db: Session = Depends(get_db)):
 @app.get("/disciplines/notes/{discipline_name}", status_code=status.HTTP_200_OK, tags=["Notas"])
 def get_disciplines_notes(discipline_name: str, db: Session = Depends(get_db)):
     notas = crud.read_notas_disciplina(discipline_name, db)
+
+    if len(notas) == 0:
+        raise HTTPException(
+            status_code=404, detail="List of notes not found")
     return notas
 
 
 # função para criar disciplinas
-@app.post("/discipline", status_code=status.HTTP_201_CREATED,  tags=["Disciplinas"])
+@app.post("/discipline", status_code=status.HTTP_201_CREATED, tags=["Disciplinas"])
 def create_discipline(discipline: schemas.CreateDisciplina,  db: Session = Depends(get_db)):
 
     db_user = crud.read_disciplina(db, discipline_name=discipline.name)
@@ -88,4 +93,8 @@ def update_discipline(discipline_name: str, discipline: schemas.DisciplinaBase, 
 
     return crud.update_disciplina(db=db, discipline_name=discipline_name, discipline=discipline)
 
-# arrumar: respostas quando não tem nenhum dado (tem que dar erro pro get notas com materia que nao existe), HTTPexception, response_models
+# arrumar:
+# response_models,
+#  quando usa o refresh
+# CREATE DISCIPLINA -> PRECISA SER OBRIGATORIO?
+# DESCRIPTION FICA RUIM NO CREATE DISCIPLINA

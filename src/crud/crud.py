@@ -1,3 +1,4 @@
+from fastapi.exceptions import HTTPException
 from sqlalchemy.orm import Session
 from models import models
 from schemas import schemas
@@ -36,47 +37,63 @@ def create_disciplina(db: Session, disciplina: schemas.CreateDisciplina):
 
 def create_nota(nota: schemas.NotasBase, discipline_name: str, db: Session):
 
-    db_nota = models.Notas(
-        description=nota.description, disciplina_id=discipline_name)
-
-    db.add(db_nota)
-    db.commit()
-    db.refresh(db_nota)
+    try:
+        db_nota = models.Notas(
+            description=nota.description, disciplina_id=discipline_name)
+        db.add(db_nota)
+        db.commit()
+        db.refresh(db_nota)
+    except:
+        raise HTTPException(status_code=404, detail="Subject not found")
 
     return db_nota
 
 
 def delete_disciplina(db: Session, discipline_name: str):
 
-    db.query(models.Disciplina).filter(
+    element = db.query(models.Disciplina).filter(
         models.Disciplina.name == discipline_name).delete()
-    db.commit()
-    return discipline_name
+    if element != 0:
+
+        db.commit()
+    else:
+        raise HTTPException(status_code=404, detail="Subject not found")
+
+    return {discipline_name: "Deletada com Sucesso"}
 
 
 def delete_nota(db: Session, discipline_name: str, nota_id: int):
 
-    db.query(models.Notas).filter(discipline_name == models.Notas.disciplina_id).filter(
+    element = db.query(models.Notas).filter(discipline_name == models.Notas.disciplina_id).filter(
         models.Notas.id == nota_id).delete()
-    db.commit()
-    return discipline_name
+
+    if element != 0:
+
+        db.commit()
+    else:
+        raise HTTPException(status_code=400, detail="Wrong info")
+
+    return {discipline_name: "Nota {0} deletada com Sucesso".format(nota_id)}
 
 
 def update_nota(db: Session, nota: schemas.Notas):
 
-    db.query(models.Notas).filter(models.Notas.id == nota.id).update(
+    element = db.query(models.Notas).filter(models.Notas.id == nota.id).update(
         {"description": nota.description})
-
-    db.commit()
-
+    if element != 0:
+        db.commit()
+    else:
+        raise HTTPException(status_code=404, detail="Id not found")
     return nota
 
 
 def update_disciplina(db: Session, discipline_name: str, discipline: schemas.DisciplinaBase):
 
-    db.query(models.Disciplina).filter(models.Disciplina.name == discipline_name).update(
+    element = db.query(models.Disciplina).filter(models.Disciplina.name == discipline_name).update(
         {"name": discipline.name, "professor_name": discipline.professor_name})
+    if element != 0:
 
-    db.commit()
-
+        db.commit()
+    else:
+        raise HTTPException(status_code=404, detail="Subject not found")
     return discipline
