@@ -52,3 +52,31 @@ def delete_disciplina(db: Session, discipline_name: str):
         models.Disciplina.name == discipline_name).delete()
     db.commit()
     return discipline_name
+
+
+def delete_nota(db: Session, discipline_name: str, nota_id: int):
+
+    db.query(models.Notas).filter(discipline_name == models.Notas.disciplina_id).filter(
+        models.Notas.id == nota_id).delete()
+    db.commit()
+    return discipline_name
+
+
+def update_nota(db: Session, nota: schemas.Notas):
+
+    db.query(models.Notas).filter(models.Notas.id == nota.id).update(
+        {"description": nota.description})
+
+    db.commit()
+
+    return nota
+
+
+def update_disciplina(db: Session, discipline_name: str, discipline: schemas.DisciplinaBase):
+
+    db.query(models.Disciplina).filter(models.Disciplina.name == discipline_name).update(
+        {"name": discipline.name, "professor_name": discipline.professor_name})
+
+    db.commit()
+
+    return discipline

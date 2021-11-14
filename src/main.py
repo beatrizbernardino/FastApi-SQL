@@ -71,4 +71,21 @@ def delete_discipline(discipline_name: str,  db: Session = Depends(get_db)):
     return crud.delete_disciplina(db=db, discipline_name=discipline_name)
 
 
+# função de deletar notas
+@app.delete("/disciplines/notes/{discipline_name}", status_code=status.HTTP_200_OK, tags=["Notas"])
+def delete_note(discipline_name: str, nota_id: int,  db: Session = Depends(get_db)):
+    return crud.delete_nota(db=db, discipline_name=discipline_name, nota_id=nota_id)
+
+
+# função de modificar notas
+@app.put("/disciplines/notes/", status_code=status.HTTP_200_OK, tags=["Notas"])
+def update_note(nota: schemas.Notas, db: Session = Depends(get_db)):
+    return crud.update_nota(db=db, nota=nota)
+
+
+@app.patch("/disciplines/discipline/{discipline_name}", status_code=status.HTTP_200_OK, tags=["Disciplinas"])
+def update_discipline(discipline_name: str, discipline: schemas.DisciplinaBase, db: Session = Depends(get_db)):
+
+    return crud.update_disciplina(db=db, discipline_name=discipline_name, discipline=discipline)
+
 # arrumar: respostas quando não tem nenhum dado (tem que dar erro pro get notas com materia que nao existe), HTTPexception, response_models
