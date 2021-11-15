@@ -9,7 +9,7 @@ Entrega Final - branch SQL
 
 ### Instruções: 
 
--  Crie um arquivo .env na raiz do repositório com as seguintes variáveis:
+-  Crie um arquivo .env na raiz do repositório com as seguintes variáveis e preencha com as informações do seu SQL:
 
 ```python
 SQL_SERVER=
