@@ -4,6 +4,11 @@ from models import models
 from schemas import schemas
 
 
+
+def read_all(db: Session):
+    return db.query(models.Disciplina, models.Notas).filter(models.Disciplina.name==models.Notas.disciplina_id).all()
+
+
 def read_nome_disciplinas(db: Session):
     return db.query(models.Disciplina.name).all()
 
@@ -20,19 +25,24 @@ def create_disciplina(db: Session, disciplina: schemas.CreateDisciplina):
 
     db_disciplina = models.Disciplina(
         name=disciplina.name, professor_name=disciplina.professor_name)
-
-    db_nota = models.Notas(
-        description=disciplina.description, disciplina_id=disciplina.name)
-
+    
     db.add(db_disciplina)
     db.commit()
 
-    db.add(db_nota)
-    db.commit()
-    db.refresh(db_nota)
+    if not disciplina.description:
+        db.refresh(db_disciplina)
+        return disciplina
+    else:
 
+        for desc in disciplina.description:
+            db_nota = models.Notas(
+                description=str(desc)[13:-1], disciplina_id=disciplina.name)
+            db.add(db_nota)
+            db.commit()
+            db.refresh(db_nota)    
+        
     db.refresh(db_disciplina)
-    return db_disciplina
+    return disciplina
 
 
 def create_nota(nota: schemas.NotasBase, discipline_name: str, db: Session):

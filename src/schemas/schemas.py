@@ -11,7 +11,7 @@ class NotasBase(BaseModel):
                              description=f'{"String field"}',
                              example="Conteúdos para revisar: bla, bla ")
 
-
+ 
 class Notas(NotasBase):
 
     id: int = Field(...,

@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 # sqlite://user:password@postgresserver/db
-# SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root@127.0.0.1:3306/projetoDois"
 
 
 # Database config

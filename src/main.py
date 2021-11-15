@@ -10,6 +10,10 @@ from database.database import SessionLocal, engine
 
 tags_metadata = [
     {
+        "name": "Default",
+        "description": "Raiz",
+    },
+    {
         "name": "Disciplinas",
         "description": "Rotas envolvendo aterações nas disciplinas",
     },
@@ -33,6 +37,12 @@ def get_db():
         db.close()
 
 
+#função que pega todas as informações
+@app.get("/", tags=["Default"])
+def get_all(db: Session = Depends(get_db)):
+    disciplinas = crud.read_all(db)
+    return disciplinas
+
 # função para pegar os nomes de todas as disciplinas
 @app.get("/disciplines/names", tags=["Disciplinas"])
 def get_disciplines(db: Session = Depends(get_db)):
@@ -53,7 +63,7 @@ def get_disciplines_notes(discipline_name: str, db: Session = Depends(get_db)):
 
 
 # função para criar disciplinas
-@app.post("/discipline", status_code=status.HTTP_201_CREATED, tags=["Disciplinas"])
+@app.post("/discipline", status_code=status.HTTP_201_CREATED, tags=["Disciplinas"], response_model=schemas.CreateDisciplina)
 def create_discipline(discipline: schemas.CreateDisciplina,  db: Session = Depends(get_db)):
 
     db_user = crud.read_disciplina(db, discipline_name=discipline.name)
@@ -83,18 +93,12 @@ def delete_note(discipline_name: str, nota_id: int,  db: Session = Depends(get_d
 
 
 # função de modificar notas
-@app.put("/disciplines/notes/", status_code=status.HTTP_200_OK, tags=["Notas"])
+@app.put("/disciplines/notes/", status_code=status.HTTP_200_OK,  response_model=schemas.Notas, tags=["Notas"])
 def update_note(nota: schemas.Notas, db: Session = Depends(get_db)):
     return crud.update_nota(db=db, nota=nota)
 
-
-@app.patch("/disciplines/discipline/{discipline_name}", status_code=status.HTTP_200_OK, tags=["Disciplinas"])
+# função de modificar disciplinas
+@app.patch("/disciplines/discipline/{discipline_name}", response_model=schemas.DisciplinaBase, status_code=status.HTTP_200_OK, tags=["Disciplinas"])
 def update_discipline(discipline_name: str, discipline: schemas.DisciplinaBase, db: Session = Depends(get_db)):
 
     return crud.update_disciplina(db=db, discipline_name=discipline_name, discipline=discipline)
-
-# arrumar:
-# response_models,
-#  quando usa o refresh
-# CREATE DISCIPLINA -> PRECISA SER OBRIGATORIO?
-# DESCRIPTION FICA RUIM NO CREATE DISCIPLINA
